@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: eu-north-1                   # Note: Change this to your AWS region
-  ECR_REPOSITORY: sample-python-app       # Note: Change this to your ECR repo name
+  ECR_REPOSITORY:  740994137443.dkr.ecr.eu-north-1.amazonaws.com/sample-python-app      # Note: Change this to your ECR repo name
 
 jobs:
   build-and-push:
@@ -39,3 +39,19 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: python-app-container
+        image: ${{ steps.login-ecr.outputs.registry }}/sample-python-app:${{ github.sha }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: python-app-service
+        cluster: python-app-cluster
+        wait-for-service-stability: true

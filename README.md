@@ -25,3 +25,4 @@ Please follow the guides located in the `docs` directory sequentially:
 2. [Setting up GitHub Actions & Amazon ECR](docs/02-github-actions-ecr.md)
 3. [Manual Deployment to Amazon EC2](docs/03-deploy-to-ec2.md)
 4. [Deployment to Amazon ECS (Fargate)](docs/04-deploy-to-ecs.md)
+5. [Continuous Deployment (CI/CD) to AWS](docs/05-cicd-deployment.md)

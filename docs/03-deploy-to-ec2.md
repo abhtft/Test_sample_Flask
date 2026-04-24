@@ -31,8 +31,8 @@ Servers need permission to download images from your private registry.
 1. Connect to your EC2 instance using SSH (or EC2 Instance Connect).
 2. Update the OS and install docker:
 ```bash
-sudo yum update -y
-sudo yum install docker -y
+sudo apt update -y
+sudo apt install docker -y
 sudo service docker start
 sudo usermod -a -G docker ec2-user
 ```
@@ -43,20 +43,24 @@ Since we attached the IAM role, we can login to ECR without credentials!
 
 1. Login to ECR:
 ```bash
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 740994137443.dkr.ecr.eu-north-1.amazonaws.com
 ```
 *(Replace your region and AWS Account ID appropriately)*
 
 2. Pull the image:
 ```bash
-docker pull YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/sample-python-app:latest
+docker pull 740994137443.dkr.ecr.eu-north-1.amazonaws.com/sample-python-app:latest
 ```
 
 3. Run the container:
 ```bash
-docker run -d -p 8000:8000 --name my-app YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/sample-python-app:latest
+docker run -d -p 8000:8000 --name my-app 740994137443.dkr.ecr.eu-north-1.amazonaws.com/sample-python-app:latest
 ```
 
 ## Step 6: Verify
 Find your EC2 instance's **Public IPv4 address** in the AWS console.
 Go to `http://YOUR_EC2_IP:8000` in your web browser. You should see the application running!
+
+curl http://127.0.0.1:8000
+
+
