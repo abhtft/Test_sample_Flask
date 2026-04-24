@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  AWS_REGION: us-east-1                   # Note: Change this to your AWS region
+  AWS_REGION: eu-north-1                   # Note: Change this to your AWS region
   ECR_REPOSITORY: sample-python-app       # Note: Change this to your ECR repo name
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+        aws-region: eu-north-1
 
     - name: Login to Amazon ECR
       id: login-ecr
