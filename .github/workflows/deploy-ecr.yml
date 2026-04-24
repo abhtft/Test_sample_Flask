@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: eu-north-1                   # Note: Change this to your AWS region
-  ECR_REPOSITORY:  740994137443.dkr.ecr.eu-north-1.amazonaws.com/sample-python-app      # Note: Change this to your ECR repo name
+  ECR_REPOSITORY: sample-python-app      
 
 jobs:
   build-and-push:
