@@ -1,0 +1,82 @@
+{
+    "family": "sample_fargate",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "3072",
+    "executionRoleArn": "arn:aws:iam::740994137443:role/service-role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::740994137443:role/service-role/ecsTaskRole",
+    "containerDefinitions": [
+        {
+            "name": "python-app-container-fargate",
+            "image": "740994137443.dkr.ecr.eu-north-1.amazonaws.com/sample-python-app:latest",
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "protocol": "tcp",
+                    "name": "python-app-container-fargate-80-tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "FLASK_ENV",
+                    "value": "production"
+                },
+                {
+                    "name": "PORT",
+                    "value": "80"
+                }
+            ],
+            "secrets": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/sample_fargate",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "eu-north-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "healthCheck": {
+                "command": [
+                    "CMD-SHELL",
+                    "curl -f http://localhost:80/health || exit 1"
+                ],
+                "interval": 30,
+                "timeout": 5,
+                "retries": 3,
+                "startPeriod": 60
+            },
+            "ulimits": [
+                {
+                    "name": "nofile",
+                    "softLimit": 65536,
+                    "hardLimit": 65536
+                }
+            ],
+            "dockerLabels": {
+                "com.amazonaws.ecs.task-arn": "arn:aws:ecs:eu-north-1:740994137443:task-definition/sample_fargate"
+            },
+            "resourceRequirements": [],
+            "dependsOn": []
+        }
+    ],
+    "placementConstraints": [],
+    "volumes": [],
+    "tags": [
+        {
+            "key": "Environment",
+            "value": "production"
+        },
+        {
+            "key": "Application",
+            "value": "sample-python-app"
+        }
+    ]
+}

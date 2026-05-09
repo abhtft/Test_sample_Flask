@@ -11,7 +11,7 @@ def hello():
     env_var = os.environ.get('MY_CUSTOM_VAR', 'Default Variable Value')
     
     html = f"""
-    <h1>Hello from Python inside Docker! 🚀</h1>
+    <h1>Hello from Python inside Docker v2! 🚀</h1>
     <p>This is a small application deployed via AWS ECS / EC2.</p>
     <p><strong>Environment Variable (MY_CUSTOM_VAR):</strong> {env_var}</p>
     """
