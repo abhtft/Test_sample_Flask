@@ -1,0 +1,30 @@
+{
+    "family": "sample_fargate",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": ["FARGATE"],
+    "cpu": "512",
+    "memory": "1024",
+    "executionRoleArn": "arn:aws:iam::740994137443:role/service-role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+        {
+            "name": "python-app-container-fargate",
+            "image": "740994137443.dkr.ecr.eu-north-1.amazonaws.com/sample-python-app:latest",
+            "portMappings": [
+                {
+                    "containerPort": 8000,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/sample_fargate",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "eu-north-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+        }
+    ]
+}
