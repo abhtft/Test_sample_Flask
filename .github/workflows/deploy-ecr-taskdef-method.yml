@@ -40,9 +40,9 @@ jobs:
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
     - name: Update task definition with environment variables
-      run: |
-        # Update the environment variable value in task definition
-        sed -i "s/Default Variable Value/${{ secrets.MY_CUSTOM_VAR }}/g" console-task-definition.json
+      # run: |
+      #   # Update the environment variable value in task definition
+      #   sed -i "s/Default Variable Value/${{ secrets.MY_CUSTOM_VAR }}/g" console-task-definition.json
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def

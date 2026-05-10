@@ -20,10 +20,11 @@
                 }
             ],
             "essential": true,
-            "environment": [
+            "environment": [],
+            "secrets": [
                 {
                     "name": "MY_CUSTOM_VAR",
-                    "value": "helloworld2"
+                    "valueFrom": "MY_CUSTOM_VAR"
                 }
             ],
             "environmentFiles": [],
