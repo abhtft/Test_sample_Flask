@@ -34,7 +34,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
         MY_CUSTOM_VAR: ${{ secrets.MY_CUSTOM_VAR}}
-      run: 
+      run: |
         docker build --build-arg MY_CUSTOM_VAR=$MY_CUSTOM_VAR -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
