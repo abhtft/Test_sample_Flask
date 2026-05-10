@@ -1,9 +1,6 @@
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
-# Build-time argument for environment variable
-ARG MY_CUSTOM_VAR
-
 # Set the working directory in the container
 WORKDIR /app
 
@@ -15,9 +12,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
 COPY app.py ./
-
-# Set environment variable from build argument (if provided, otherwise use default)
-ENV MY_CUSTOM_VAR=${MY_CUSTOM_VAR:-Default Variable Value}
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
