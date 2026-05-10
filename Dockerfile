@@ -1,12 +1,12 @@
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
-# Build-time argument for environment variable
-ARG MY_CUSTOM_VAR
+# # Build-time argument for environment variable
+# ARG MY_CUSTOM_VAR
 
-# Set environment variable from build argument (with default fallback)
-# Set environment variable
-ENV MY_CUSTOM_VAR=$MY_CUSTOM_VAR
+# # Set environment variable from build argument (with default fallback)
+# # Set environment variable
+# ENV MY_CUSTOM_VAR=$MY_CUSTOM_VAR
 
 # Set the working directory in the container
 WORKDIR /app
