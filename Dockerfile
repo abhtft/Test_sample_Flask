@@ -5,7 +5,8 @@ FROM python:3.9-slim
 ARG MY_CUSTOM_VAR
 
 # Set environment variable from build argument (with default fallback)
-ENV MY_CUSTOM_VAR=${MY_CUSTOM_VAR:-Default Variable Value}
+# Set environment variable
+ENV MY_CUSTOM_VAR=$MY_CUSTOM_VAR
 
 # Set the working directory in the container
 WORKDIR /app
