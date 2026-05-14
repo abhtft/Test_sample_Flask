@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify
+from dotenv import load_dotenv
 import os
 import psycopg2
 import psycopg2.extras
+
+load_dotenv()   # loads .env when running locally (no-op in ECS where env vars are injected)
 
 app = Flask(__name__)
 

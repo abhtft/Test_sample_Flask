@@ -220,8 +220,16 @@ And in `secrets`:
 2. Once the new task is running, call the init endpoint **once**:
 
 ```bash
-curl curl http://13.61.180.191:8000/rds/init
+curl http://13.48.129.172:8000/rds/init
 # {"message": "Table 'users' is ready"}
+
+curl http://127.0.0.1:8000/rds/users
+
+curl -X POST http://13.61.180.191:8000/rds/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Alice", "email": "[EMAIL_ADDRESS]"}'
+
+
 ```
 
 This runs `CREATE TABLE IF NOT EXISTS users (...)` inside Aurora.

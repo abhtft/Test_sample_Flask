@@ -20,11 +20,40 @@
                 }
             ],
             "essential": true,
-            "environment": [],
+            "environment": [
+                {
+                    "name": "S3_BUCKET_NAME",
+                    "value": "my-python-app-bucket"
+                },
+                {
+                    "name": "DYNAMODB_TABLE",
+                    "value": "python-app-items1"
+                },
+                {
+                    "name": "DB_HOST",
+                    "value": "database1.cb0080sgecg7.eu-north-1.rds.amazonaws.com"
+                },
+                {
+                    "name": "DB_PORT",
+                    "value": "5432"
+                },
+                {
+                    "name": "DB_NAME",
+                    "value": "postgres"
+                },
+                {
+                    "name": "DB_USER",
+                    "value": "postgres"
+                }
+            ],
             "secrets": [
                 {
                     "name": "MY_CUSTOM_VAR",
                     "valueFrom": "MY_CUSTOM_VAR"
+                },
+                {
+                    "name": "DB_PASSWORD",
+                    "valueFrom": "arn:aws:secretsmanager:eu-north-1:740994137443:secret:dev/alpha/test1-B25Cjl"
                 }
             ],
             "environmentFiles": [],
