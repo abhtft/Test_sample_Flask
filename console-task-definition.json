@@ -20,7 +20,16 @@
                 }
             ],
             "essential": true,
-            "environment": [],
+            "environment": [
+                {
+                    "name": "S3_BUCKET_NAME",
+                    "value": "my-python-app-bucket"
+                },
+                {
+                    "name": "DYNAMODB_TABLE",
+                    "value": "python-app-items"
+                }
+            ],
             "secrets": [
                 {
                     "name": "MY_CUSTOM_VAR",
