@@ -213,14 +213,14 @@ And in `secrets`:
 ```
 
 ---
-
+#
 ### Step 8 — Deploy and Initialise the Table
 
 1. **Push to `master`** → GitHub Actions builds, pushes, and deploys.
 2. Once the new task is running, call the init endpoint **once**:
 
 ```bash
-curl http://13.48.129.172:8000/rds/init
+curl http://16.16.74.65/rds/init
 # {"message": "Table 'users' is ready"}
 
 curl http://127.0.0.1:8000/rds/users
