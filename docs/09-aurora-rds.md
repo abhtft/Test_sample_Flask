@@ -22,7 +22,7 @@ Use Aurora when your data is **relational** (users, orders, inventory, etc.).
 ### `requirements.txt`
 Added `psycopg2-binary` — the PostgreSQL driver for Python.
 
-```
+```text
 psycopg2-binary==2.9.9
 ```
 
@@ -213,24 +213,33 @@ And in `secrets`:
 ```
 
 ---
-#
+
 ### Step 8 — Deploy and Initialise the Table
 
 1. **Push to `master`** → GitHub Actions builds, pushes, and deploys.
-2. Once the new task is running, call the init endpoint **once**:
+2. Once the new task is running, find the Fargate public IP in the ECS console.
+3. Call the init endpoint **once** to create the `users` table:
 
 ```bash
-curl http://16.16.74.65/rds/init
+# Replace with your Fargate task's public IP
+export ECS_IP=13.60.162.87
+export ECS_IP=192.168.0.4
+
+# Initialise the table (run once)
+curl http://$ECS_IP:8000/rds/init
 # {"message": "Table 'users' is ready"}
 
-curl http://127.0.0.1:8000/rds/users
-
-curl -X POST http://13.61.180.191:8000/rds/users \
+# Insert a test record
+curl -X POST http://$ECS_IP:8000/rds/users \
   -H "Content-Type: application/json" \
-  -d '{"name": "Alice", "email": "[EMAIL_ADDRESS]"}'
-
-
+  -d '{"name": "Ali", "email": "al@example.com"}'
 ```
+
+> **Windows CMD alternative:**
+> ```cmd
+> set $ECS_IP=13.60.162.87
+> curl http://%ECS_IP%:8000/rds/init
+> ```
 
 This runs `CREATE TABLE IF NOT EXISTS users (...)` inside Aurora.
 
@@ -238,12 +247,19 @@ This runs `CREATE TABLE IF NOT EXISTS users (...)` inside Aurora.
 
 ## Testing the Endpoints
 
+### Initialise (run once)
+
+```bash
+curl http://ECS_IP:8000/rds/init
+# {"message": "Table 'users' is ready"}
+```
+
 ### Insert a user
 
 ```bash
-curl -X POST http://YOUR_ECS_IP:8000/rds/users \
+curl -X POST http://$ECS_IP:8000/rds/users \
   -H "Content-Type: application/json" \
-  -d '{"name": "Alice", "email": "alice@example.com"}'
+  -d '{"name": "Alfice", "email": "alice@exampfle.com"}'
 ```
 
 Expected response (`201`):
@@ -258,19 +274,19 @@ Expected response (`201`):
 ### List all users
 
 ```bash
-curl http://YOUR_ECS_IP:8000/rds/users
+curl http://$ECS_IP:8000/rds/users
 ```
 
 ### Fetch user by ID
 
 ```bash
-curl http://YOUR_ECS_IP:8000/rds/users/1
+curl http://$ECS_IP:8000/rds/users/1
 ```
 
 ### Delete a user
 
 ```bash
-curl -X DELETE http://YOUR_ECS_IP:8000/rds/users/1
+curl -X DELETE http://$ECS_IP:8000/rds/users/1
 # {"message": "User id=1 deleted"}
 ```
 
@@ -278,7 +294,7 @@ curl -X DELETE http://YOUR_ECS_IP:8000/rds/users/1
 
 ## How Secrets Flow at Runtime
 
-```
+```text
 GitHub Actions
   └─ secrets.DB_HOST / DB_USER / DB_NAME
        └─ sed patches into console-task-definition.json
@@ -288,7 +304,7 @@ ECS Fargate (at container start)
   └─ reads task definition
        ├─ environment[]  → DB_HOST, DB_PORT, DB_NAME, DB_USER  (plain text)
        └─ secrets[]      → DB_PASSWORD  ← pulled from Secrets Manager by the ECS agent
-                                           NEVER appears in the task definition file
+                                          NEVER appears in the task definition file
 ```
 
 ---
@@ -319,5 +335,10 @@ DB_PASSWORD=your-password-here
 ```
 
 > **Tip:** Aurora is not free even in dev mode. For pure local testing, run a local PostgreSQL:  
-> `docker run -p 5432:5432 -e POSTGRES_PASSWORD=test postgres:16`  
-> and set `DB_HOST=localhost`.
+> ```bash
+> docker run -p 5432:5432 -e POSTGRES_PASSWORD=test postgres:16
+> ```
+> Then set `DB_HOST=localhost`.
+
+
+Test-NetConnection database1.cb0080sgecg7.eu-north-1.rds.amazonaws.com

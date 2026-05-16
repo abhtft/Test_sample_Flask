@@ -3,6 +3,9 @@ from dotenv import load_dotenv
 import os
 import psycopg2
 import psycopg2.extras
+import boto3
+from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 
 load_dotenv()   # loads .env when running locally (no-op in ECS where env vars are injected)
 
@@ -151,6 +154,154 @@ def rds_delete_user(user_id):
         if deleted is None:
             return jsonify({"error": f"User id={user_id} not found"}), 404
         return jsonify({"message": f"User id={user_id} deleted"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ── DynamoDB config ────────────────────────────────────────────────────────
+AWS_REGION      = os.environ.get('AWS_REGION', 'eu-north-1')
+DYNAMODB_TABLE  = os.environ.get('DYNAMODB_TABLE', 'ABCD')
+
+
+def get_dynamo_table():
+    """Return a boto3 DynamoDB Table resource."""
+    dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
+    return dynamodb.Table(DYNAMODB_TABLE)
+
+
+# ── DynamoDB routes ────────────────────────────────────────────────────────
+
+@app.route('/dynamo/items', methods=['POST'])
+def dynamo_create_item():
+    """
+    Create / overwrite an item.
+    Body: { "partition": "<key>", ...extra fields... }
+    'partition' maps to the DynamoDB partition key.
+    """
+    data = request.get_json(silent=True) or {}
+    partition = data.get('partition', '').strip()
+    if not partition:
+        return jsonify({"error": "'partition' key is required"}), 400
+
+    try:
+        table = get_dynamo_table()
+        table.put_item(Item=data)
+        return jsonify({"message": "Item created/updated", "item": data}), 201
+    except ClientError as e:
+        return jsonify({"error": e.response['Error']['Message']}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/dynamo/items', methods=['GET'])
+def dynamo_list_items():
+    """
+    Scan and return ALL items in the table.
+    Optional query param: ?limit=N (default 100).
+    WARNING: scan reads the entire table — avoid on large datasets.
+    """
+    limit = min(int(request.args.get('limit', 100)), 1000)
+    try:
+        table = get_dynamo_table()
+        resp  = table.scan(Limit=limit)
+        items = resp.get('Items', [])
+        return jsonify({"items": items, "count": len(items),
+                        "scanned": resp.get('ScannedCount', len(items))})
+    except ClientError as e:
+        return jsonify({"error": e.response['Error']['Message']}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/dynamo/items/<string:partition_key>', methods=['GET'])
+def dynamo_get_item(partition_key):
+    """
+    Fetch a single item by its partition key value.
+    GET /dynamo/items/<partition_key_value>
+    """
+    try:
+        table = get_dynamo_table()
+        resp  = table.get_item(Key={'partition': partition_key})
+        item  = resp.get('Item')
+        if item is None:
+            return jsonify({"error": f"Item with partition='{partition_key}' not found"}), 404
+        return jsonify({"item": item})
+    except ClientError as e:
+        return jsonify({"error": e.response['Error']['Message']}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/dynamo/items/<string:partition_key>', methods=['PUT'])
+def dynamo_update_item(partition_key):
+    """
+    Update specific attributes of an existing item.
+    Body: { "<attr>": "<value>", ... }  — do NOT include 'partition' in body.
+    PUT /dynamo/items/<partition_key_value>
+    """
+    data = request.get_json(silent=True) or {}
+    # Remove key from update payload to avoid overwriting the key itself
+    data.pop('partition', None)
+
+    if not data:
+        return jsonify({"error": "No attributes to update provided"}), 400
+
+    # Build UpdateExpression dynamically
+    expr_names  = {}
+    expr_values = {}
+    set_parts   = []
+    for i, (attr, val) in enumerate(data.items()):
+        name_ph  = f'#a{i}'
+        value_ph = f':v{i}'
+        expr_names[name_ph]  = attr
+        expr_values[value_ph] = val
+        set_parts.append(f'{name_ph} = {value_ph}')
+
+    update_expr = 'SET ' + ', '.join(set_parts)
+
+    try:
+        table = get_dynamo_table()
+        resp  = table.update_item(
+            Key={'partition': partition_key},
+            UpdateExpression=update_expr,
+            ExpressionAttributeNames=expr_names,
+            ExpressionAttributeValues=expr_values,
+            ConditionExpression='attribute_exists(#pk)',
+            ExpressionAttributeNames={**expr_names, '#pk': 'partition'},
+            ReturnValues='ALL_NEW',
+        )
+        return jsonify({"message": "Item updated", "item": resp.get('Attributes', {})})
+    except ClientError as e:
+        code = e.response['Error']['Code']
+        if code == 'ConditionalCheckFailedException':
+            return jsonify({"error": f"Item with partition='{partition_key}' not found"}), 404
+        return jsonify({"error": e.response['Error']['Message']}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/dynamo/items/<string:partition_key>', methods=['DELETE'])
+def dynamo_delete_item(partition_key):
+    """
+    Delete an item by partition key.
+    DELETE /dynamo/items/<partition_key_value>
+    """
+    try:
+        table = get_dynamo_table()
+        resp  = table.delete_item(
+            Key={'partition': partition_key},
+            ConditionExpression='attribute_exists(partition)',
+            ReturnValues='ALL_OLD',
+        )
+        old = resp.get('Attributes')
+        if not old:
+            return jsonify({"error": f"Item with partition='{partition_key}' not found"}), 404
+        return jsonify({"message": f"Item '{partition_key}' deleted", "deleted_item": old})
+    except ClientError as e:
+        code = e.response['Error']['Code']
+        if code == 'ConditionalCheckFailedException':
+            return jsonify({"error": f"Item with partition='{partition_key}' not found"}), 404
+        return jsonify({"error": e.response['Error']['Message']}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

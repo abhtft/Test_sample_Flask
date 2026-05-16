@@ -27,7 +27,7 @@
                 },
                 {
                     "name": "DYNAMODB_TABLE",
-                    "value": "python-app-items1"
+                    "value": "ABCD"
                 },
                 {
                     "name": "DB_HOST",
